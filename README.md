@@ -77,3 +77,17 @@ sales amounts only.
 ## Tech
 Python, pandas, SQLAlchemy, PostgreSQL
 
+## Performance tuning
+To practice query tuning, I created `fact_sales_big`, a synthetic table of
+1.96M rows made by repeating the fact table 200 times (see `sql/tuning.sql`).
+Because the rows are repeated, the data is artificial and the timings are
+illustrative.
+
+| Query | Before | After | Speedup |
+|---|---|---|---|
+| Customer total | 40.4 ms (Parallel Seq Scan) | 1.7 ms (Bitmap Heap Scan) | ~24x |
+| Order lookup | 43.9 ms (Parallel Seq Scan) | 0.23 ms (Bitmap Heap Scan) | ~190x |
+
+Times are the lowest of several runs on a local PostgreSQL 18 instance.
+Adding B-tree indexes on `customer_key` and `order_id` replaced full table
+scans with index lookups.
